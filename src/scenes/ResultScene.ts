@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { SaveSystem } from '../systems/SaveSystem';
 import type { RunResult, SaveData } from '../types';
+import { AudioSystem } from '../systems/AudioSystem';
 import { TextButton } from '../ui/TextButton';
 
 interface ResultData {
@@ -12,6 +13,7 @@ export class ResultScene extends Phaser.Scene {
   private runResult!: RunResult;
   private cleared = false;
   private saveData!: SaveData;
+  private audio!: AudioSystem;
 
   constructor() {
     super('ResultScene');
@@ -25,8 +27,14 @@ export class ResultScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
     this.saveData = SaveSystem.load();
+    this.audio = new AudioSystem();
+
+    this.add.image(width / 2, height / 2, 'bg').setDisplaySize(width, height);
+    this.add.image(width / 2, height * 0.24, 'ui-panel').setDisplaySize(width * 0.85, 240);
+    this.add.image(width / 2, height * 0.6, 'ui-panel').setDisplaySize(width * 0.85, 220);
 
     this.applyRewards();
+    this.audio.play('result');
 
     this.add
       .text(width / 2, height * 0.1, this.cleared ? 'CORE BREACHED!' : 'TIME UP', {
@@ -46,7 +54,7 @@ export class ResultScene extends Phaser.Scene {
     ];
 
     this.add
-      .text(width / 2, height * 0.24, infoLines.join('\n'), {
+      .text(width / 2, height * 0.2, infoLines.join('\n'), {
         fontFamily: 'Pretendard, sans-serif',
         fontSize: '24px',
         color: '#9fb0ff',
@@ -63,7 +71,7 @@ export class ResultScene extends Phaser.Scene {
     ];
 
     this.add
-      .text(width / 2, height * 0.55, rewardLines.join('\n'), {
+      .text(width / 2, height * 0.52, rewardLines.join('\n'), {
         fontFamily: 'Pretendard, sans-serif',
         fontSize: '24px',
         color: '#ffd56b',

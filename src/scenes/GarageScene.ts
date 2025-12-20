@@ -21,6 +21,10 @@ export class GarageScene extends Phaser.Scene {
     const { width, height } = this.scale;
     this.saveData = SaveSystem.load();
 
+    this.add.image(width / 2, height / 2, 'bg').setDisplaySize(width, height);
+    this.add.image(width / 2, height * 0.16, 'ui-panel').setDisplaySize(width * 0.85, 180);
+    this.add.image(width / 2, height * 0.48, 'ui-panel').setDisplaySize(width * 0.85, 260);
+
     this.add
       .text(width / 2, height * 0.08, 'GARAGE', {
         fontFamily: 'Pretendard, sans-serif',
@@ -65,7 +69,7 @@ export class GarageScene extends Phaser.Scene {
         color: '#e9eef6',
       })
       .setOrigin(0, 0.5);
-    const gloveButton = new TextButton(this, width * 0.8, height * 0.38, 'UPGRADE', 200, 52);
+    const gloveButton = new TextButton(this, width * 0.8, height * 0.38, 'UPGRADE', 200, 60);
     gloveButton.on('pointerup', () => {
       this.tryUpgrade('gloveLv');
     });
@@ -77,7 +81,7 @@ export class GarageScene extends Phaser.Scene {
         color: '#e9eef6',
       })
       .setOrigin(0, 0.5);
-    const hammerButton = new TextButton(this, width * 0.8, height * 0.46, 'UPGRADE', 200, 52);
+    const hammerButton = new TextButton(this, width * 0.8, height * 0.46, 'UPGRADE', 200, 60);
     hammerButton.on('pointerup', () => {
       this.tryUpgrade('hammerLv');
     });
@@ -89,23 +93,23 @@ export class GarageScene extends Phaser.Scene {
         color: '#e9eef6',
       })
       .setOrigin(0, 0.5);
-    const droneButton = new TextButton(this, width * 0.8, height * 0.54, 'UPGRADE', 200, 52);
+    const droneButton = new TextButton(this, width * 0.8, height * 0.54, 'UPGRADE', 200, 60);
     droneButton.on('pointerup', () => {
       this.tryUpgrade('droneLv');
     });
 
-    const runButton = new TextButton(this, width / 2, height * 0.7, 'RUN START', 260, 64);
+    const runButton = new TextButton(this, width / 2, height * 0.7, 'RUN START', 280, 70);
     runButton.on('pointerup', () => {
       this.scene.start('RunScene');
     });
 
-    const resetButton = new TextButton(this, width / 2, height * 0.78, 'RESET SAVE', 260, 56);
+    const resetButton = new TextButton(this, width / 2, height * 0.78, 'RESET SAVE', 280, 64);
     resetButton.on('pointerup', () => {
       this.saveData = SaveSystem.reset();
       this.refresh();
     });
 
-    const backButton = new TextButton(this, width / 2, height * 0.86, 'BACK TO TITLE', 260, 56);
+    const backButton = new TextButton(this, width / 2, height * 0.86, 'BACK TO TITLE', 280, 64);
     backButton.on('pointerup', () => {
       this.scene.start('TitleScene');
     });

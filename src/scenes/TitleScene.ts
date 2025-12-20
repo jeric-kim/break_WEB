@@ -8,10 +8,11 @@ export class TitleScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
-    this.cameras.main.setBackgroundColor('#0b0d12');
+    this.add.image(width / 2, height / 2, 'bg').setDisplaySize(width, height);
 
+    this.add.image(width / 2, height * 0.18, 'ui-panel').setDisplaySize(width * 0.8, 160);
     this.add
-      .text(width / 2, height * 0.25, 'CORE BREAKER', {
+      .text(width / 2, height * 0.18, 'CORE BREAKER', {
         fontFamily: 'Pretendard, sans-serif',
         fontSize: '52px',
         color: '#e9eef6',
@@ -19,7 +20,7 @@ export class TitleScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(width / 2, height * 0.33, 'MINI RUN: SHIELD → WEAKPOINT → CORE', {
+      .text(width / 2, height * 0.28, 'MINI RUN: SHIELD → WEAKPOINT → CORE', {
         fontFamily: 'Pretendard, sans-serif',
         fontSize: '20px',
         color: '#9fb0cc',

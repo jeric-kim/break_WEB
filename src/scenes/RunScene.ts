@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { SaveSystem } from '../systems/SaveSystem';
 import { CombatSystem } from '../systems/CombatSystem';
 import type { HitGrade, StageType, RunResult } from '../types';
+import { AudioSystem } from '../systems/AudioSystem';
 
 interface StageInfo {
   type: StageType;
@@ -28,10 +29,11 @@ export class RunScene extends Phaser.Scene {
   private gradeText!: Phaser.GameObjects.Text;
   private stunText!: Phaser.GameObjects.Text;
   private marker!: Phaser.GameObjects.Triangle;
-  private ringGraphics!: Phaser.GameObjects.Graphics;
-  private safeGraphics!: Phaser.GameObjects.Graphics;
+  private safeImage!: Phaser.GameObjects.Image;
+  private ringImage!: Phaser.GameObjects.Image;
   private crackGraphics!: Phaser.GameObjects.Graphics;
   private safeContainer!: Phaser.GameObjects.Container;
+  private shadowImage!: Phaser.GameObjects.Image;
   private hitstopRemaining = 0;
   private markerAngle = 0;
   private pointerDownTime: number | null = null;
@@ -39,6 +41,7 @@ export class RunScene extends Phaser.Scene {
   private timeBar!: Phaser.GameObjects.Rectangle;
   private stageThresholds: number[] = [];
   private finished = false;
+  private audio!: AudioSystem;
 
   constructor() {
     super('RunScene');
@@ -47,13 +50,14 @@ export class RunScene extends Phaser.Scene {
   create() {
     const saveData = SaveSystem.load();
     this.combat = new CombatSystem(saveData.equipment);
+    this.audio = new AudioSystem();
 
     this.timeLeft = 40;
     this.stageIndex = 0;
     this.setupStage();
 
     const { width, height } = this.scale;
-    this.cameras.main.setBackgroundColor('#0b0d12');
+    this.add.image(width / 2, height / 2, 'bg').setDisplaySize(width, height);
 
     this.stageLabel = this.add
       .text(width / 2, height * 0.08, '', {
@@ -119,15 +123,18 @@ export class RunScene extends Phaser.Scene {
     const safeCenterY = height * 0.6;
     const safeCenterX = width / 2;
 
-    this.safeGraphics = this.add.graphics();
     this.crackGraphics = this.add.graphics();
-    this.safeContainer = this.add.container(safeCenterX, safeCenterY, [this.safeGraphics, this.crackGraphics]);
+    this.shadowImage = this.add.image(safeCenterX, safeCenterY + 120, 'shadow');
+    this.shadowImage.setDisplaySize(240, 70);
 
-    this.ringGraphics = this.add.graphics();
-    this.ringGraphics.setPosition(safeCenterX, safeCenterY - 40);
+    this.safeImage = this.add.image(0, 0, this.getSafeTextureKey());
+    this.safeContainer = this.add.container(safeCenterX, safeCenterY, [this.safeImage, this.crackGraphics]);
 
-    this.marker = this.add.triangle(0, 0, 0, -18, 12, 10, -12, 10, 0xffd56b);
-    this.marker.setPosition(safeCenterX, safeCenterY - 40 - 120);
+    this.ringImage = this.add.image(safeCenterX, safeCenterY - 40, 'ring');
+    this.ringImage.setDisplaySize(260, 260);
+
+    this.marker = this.add.image(safeCenterX, safeCenterY - 40 - 120, 'marker');
+    this.marker.setDisplaySize(34, 50);
 
     this.input.on('pointerdown', () => {
       if (this.combat.stunRemaining > 0 || this.hitstopRemaining > 0) {
@@ -193,36 +200,15 @@ export class RunScene extends Phaser.Scene {
   }
 
   private drawSafe() {
-    this.safeGraphics.clear();
     this.crackGraphics.clear();
-    const color = this.getStageColor();
-    this.safeGraphics.fillStyle(color, 0.5);
-    this.safeGraphics.lineStyle(4, 0xffffff, 0.8);
-    this.safeGraphics.fillRoundedRect(-150, -120, 300, 240, 16);
-    this.safeGraphics.strokeRoundedRect(-150, -120, 300, 240, 16);
-    this.safeGraphics.fillStyle(0x0b0d12, 1);
-    this.safeGraphics.fillCircle(0, 0, 60);
-    this.safeGraphics.lineStyle(3, 0x74a2ff, 0.8);
-    this.safeGraphics.strokeCircle(0, 0, 72);
-  }
-
-  private drawRing() {
-    const ringRadius = 120;
-    this.ringGraphics.clear();
-    this.ringGraphics.lineStyle(4, 0x4a5c7b, 1);
-    this.ringGraphics.strokeCircle(0, 0, ringRadius);
-
-    this.ringGraphics.lineStyle(6, 0x74a2ff, 0.6);
-    const targetAngle = Phaser.Math.DegToRad(270);
-    this.ringGraphics.beginPath();
-    this.ringGraphics.arc(0, 0, ringRadius, targetAngle - 0.2, targetAngle + 0.2);
-    this.ringGraphics.strokePath();
+    this.safeImage.setTexture(this.getSafeTextureKey());
+    this.safeImage.setDisplaySize(320, 280);
   }
 
   private positionMarker() {
     const ringRadius = 120;
-    const centerX = this.ringGraphics.x;
-    const centerY = this.ringGraphics.y;
+    const centerX = this.ringImage.x;
+    const centerY = this.ringImage.y;
     const angleRad = Phaser.Math.DegToRad(this.markerAngle);
     const x = centerX + Math.cos(angleRad) * ringRadius;
     const y = centerY + Math.sin(angleRad) * ringRadius;
@@ -251,6 +237,17 @@ export class RunScene extends Phaser.Scene {
   private handleHit(grade: HitGrade, baseDamage: number) {
     const result = this.combat.applyHit(grade, baseDamage);
     this.gradeText.setText(result.grade);
+
+    if (result.grade !== 'Miss') {
+      if (baseDamage >= this.combat.getChargedDamage()) {
+        this.audio.play('charge');
+      } else {
+        this.audio.play('hit');
+      }
+      if (result.grade === 'Perfect') {
+        this.audio.play('perfect');
+      }
+    }
 
     if (result.hitstop > 0) {
       this.hitstopRemaining = result.hitstop;
@@ -285,8 +282,8 @@ export class RunScene extends Phaser.Scene {
       this.stageIndex += 1;
       this.setupStage();
       this.drawSafe();
-      this.drawRing();
       this.gradeText.setText('STAGE BREAK');
+      this.audio.play('break');
     } else {
       this.time.timeScale = 0.25;
       this.tweens.timeScale = 0.25;
@@ -365,18 +362,17 @@ export class RunScene extends Phaser.Scene {
     this.gaugeText.setText(`Counter ${Math.floor(this.combat.counterGauge)}/100`);
     this.timeBar.width = (this.scale.width * 0.8) * (this.timeLeft / 40);
 
-    this.drawRing();
   }
 
-  private getStageColor() {
+  private getSafeTextureKey() {
     const stage = stages[this.stageIndex].type;
     if (stage === 'Shield') {
-      return 0x4a5c7b;
+      return 'safe-shield';
     }
     if (stage === 'WeakPoint') {
-      return 0x3a8a6a;
+      return 'safe-weak';
     }
-    return 0x8a3a5a;
+    return 'safe-core';
   }
 
   private finishRun(cleared: boolean) {
