@@ -1,21 +1,42 @@
-import Phaser from 'phaser';
-import { BootScene } from './scenes/BootScene';
-import { TitleScene } from './scenes/TitleScene';
-import { GarageScene } from './scenes/GarageScene';
-import { RunScene } from './scenes/RunScene';
-import { ResultScene } from './scenes/ResultScene';
+import './styles.css';
+import { AppShell } from './ui/AppShell';
+import { HelpModal } from './ui/HelpModal';
+import { GameEngine } from './game/GameEngine';
+import { SaveSystem } from './storage/SaveSystem';
 
-const config: Phaser.Types.Core.GameConfig = {
-  type: Phaser.AUTO,
-  parent: 'app',
-  width: 720,
-  height: 1280,
-  backgroundColor: '#0b0d12',
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-  },
-  scene: [BootScene, TitleScene, GarageScene, RunScene, ResultScene],
-};
+const app = document.querySelector<HTMLDivElement>('#app');
+if (!app) {
+  throw new Error('App root missing');
+}
 
-new Phaser.Game(config);
+const saveSystem = new SaveSystem();
+const appShell = new AppShell(app);
+const helpModal = new HelpModal(document.body);
+const engine = new GameEngine(saveSystem, appShell.appendSystemMessage.bind(appShell));
+
+appShell.setTopbarTitle('CORE BREAKER TEXT');
+appShell.onHelp(() => {
+  helpModal.open();
+});
+
+helpModal.onClose(() => {
+  appShell.focusInput();
+});
+
+appShell.onSubmit((input) => {
+  if (!input) {
+    return;
+  }
+  if (input.toLowerCase() === 'help') {
+    helpModal.open();
+    return;
+  }
+  if (input.toLowerCase() === 'back') {
+    engine.back();
+    return;
+  }
+  engine.handleInput(input);
+});
+
+appShell.appendSystemMessage('Core Breaker 텍스트 버전에 오신 것을 환영합니다.');
+engine.start();

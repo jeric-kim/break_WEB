@@ -1,6 +1,6 @@
-# Core Breaker
+# Core Breaker Text
 
-Phaser 3 + TypeScript + Vite로 만드는 브라우저 미니게임입니다. 도트 스타일의 무료 에셋(SVG/UI)과 Web Audio 기반의 간단한 톤 효과음으로 구성되어 있습니다.
+텍스트 입력으로 진행되는 모바일 UI 게임 버전의 Core Breaker입니다. Phaser/Canvas 없이 DOM/CSS만으로 동작합니다.
 
 ## 실행 방법
 
@@ -9,24 +9,24 @@ npm install
 npm run dev
 ```
 
-## 조작
+## 조작 방식
 
-- **Tap(클릭/탭)**: 기본 타격
-- **Hold ≥ 0.35s 후 Release**: 차지 강타
-
-## 에셋 구성
-
-- `public/assets/ui`: 버튼/패널 UI 에셋
-- `public/assets/game`: 배경/세이프/마커 등 도트 스타일 스프라이트
-- `src/systems/AudioSystem.ts`: Web Audio 톤 기반 효과음 (바이너리 파일 없이 동작)
+- 상단 Help 버튼: 게임 설명/명령어/판정/저장 안내
+- 하단 입력창에 명령 입력 후 전송 (Enter 가능)
+- 입력 예시: `1`, `hit`, `charge`, `focus`, `upgrade glove`
 
 ## 게임 흐름
 
-- Boot → Title → Garage → Run → Result
-- 40초 런 동안 Shield → WeakPoint → Core 순으로 파괴
-- 판정(Perfect/Great/Good/Miss)에 따라 데미지/콤보/카운터게이지가 변합니다.
+- MAIN → GARAGE → RUN → RESULT
+- 40초 런을 턴 기반 텍스트로 진행
+- localStorage 키: `core_breaker_text_save_v1`
 
-## 저장 데이터
+## 구조
 
-- localStorage 키: `core_breaker_save_v1`
-- Garage에서 장비 업그레이드, 리셋을 지원합니다.
+- `src/main.ts`: 앱 부트스트랩
+- `src/styles.css`: 모바일 UI 스타일
+- `src/ui/AppShell.ts`: 상단 바/로그/입력 UI
+- `src/ui/HelpModal.ts`: 도움말 모달
+- `src/game/GameEngine.ts`: 상태 머신 및 입력 처리
+- `src/game/Combat.ts`: 전투/판정/스테이지 로직
+- `src/storage/SaveSystem.ts`: 저장/로드/리셋
