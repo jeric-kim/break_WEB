@@ -9,6 +9,14 @@ npm install
 npm run dev
 ```
 
+## GitHub Pages 배포 (Jekyll + Vite)
+
+1. `npm run build`로 Vite 빌드하면 `docs/`에 산출물이 생성됩니다.
+2. GitHub Pages는 Jekyll로 `docs/`를 빌드하도록 구성되어 있습니다.
+3. `.github/workflows/pages.yml` 워크플로가 Node + Ruby(Jekyll) 의존성을 설치한 뒤 배포합니다.
+
+> Pages 소스는 Actions를 사용합니다. `Gemfile`과 `_config.yml`은 Jekyll 의존성을 사전 설치하는 용도입니다.
+
 ## 조작 방식
 
 - 상단 Help 버튼: 게임 설명/명령어/판정/저장 안내

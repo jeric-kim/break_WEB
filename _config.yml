@@ -1,0 +1,17 @@
+source: docs
+destination: _site
+safe: true
+include:
+  - "assets"
+  - "index.html"
+  - "404.html"
+exclude:
+  - node_modules
+  - src
+  - package.json
+  - package-lock.json
+  - vite.config.ts
+  - tsconfig.json
+  - Gemfile
+  - Gemfile.lock
+  - README.md
